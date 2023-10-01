@@ -1,0 +1,87 @@
+{% extends "app1/base.html" %}
+
+
+{% block content %}
+
+    <div class="container">
+
+        <!-- froms Section -->
+        <div class="row">
+
+            <div class="col col-8 offset-2">
+
+                <h3 class="alert bg-secondary text-center">Employee Registration Form</h3>
+
+                    {% comment %} Showing Employee Registration Form {% endcomment %}
+                    <form method="post">
+                        {% csrf_token %}
+                
+                        {{form.as_p}}
+                        <input type="submit" value="Submit" class="btn btn-secondary">
+
+                    </form>
+
+            </div>
+
+        </div>
+
+
+        <br><br><br><br>
+        
+        
+        <!-- Display Data Section -->
+        <h3 class="alert bg-success text-center">Employee Information Table</h3>
+        <table class="table my-5">
+
+            {% comment %} if is exist, then create thead, tbody {% endcomment %}
+            {% if data %}
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Sno.</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Password</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for i in data %}
+                        <tr>
+                            {% comment %} <th scope="row">{{ i.id }}</th> {% endcomment %}
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{ i.name }}</td>
+                            <td>{{ i.email }}</td>
+                            <td>{{ i.password }}</td>
+                            <td>
+
+                                {% comment %} Update icon with link {% endcomment %}
+                                <a href="{% url 'update' i.id %}">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+
+                                {% comment %} Delete icon With Form and link {% endcomment %}
+                                <form action="{% url  'delete' i.id %}" method="post" class="d-inline">
+                                    {% csrf_token %}
+
+                                    <button type="submit">
+                                        <i class="fa-solid fa-trash "></i>
+                                    </button>
+                                    
+                                </form>
+
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+
+            {% else %}
+                <h4 class="text-center bg-info">No data available, Pls create one.</h4>
+            {% endif %}
+
+        </table>
+
+    </div>
+   
+
+{% endblock content %}

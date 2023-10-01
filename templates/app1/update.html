@@ -1,0 +1,34 @@
+{% extends 'app1/base.html' %}
+
+{% block content %}
+
+<h3 class="alert alert-warning text-center">Update Employee Information</h3>
+
+<div class="container">
+
+    <!-- Show Form With Existing Data -->
+    <form action="" method="post" id="updateForm" onsubmit="return showConfirmation()">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+        <input type="submit" value="Update" class="btn btn-success">
+        <a href="{% url 'homepage' %}" class="btn btn-primary">Back to Home</a>
+
+    </form>
+
+</div>
+
+
+
+
+<!-- Script Section -->
+<script>
+    function showConfirmation() {
+        var confirmUpdate = confirm(`Are you sure you want to update this employee's information?`);
+
+        return confirmUpdate; // Return true if the user clicks "OK," and false if they click "Cancel."
+    }
+</script>
+
+
+{% endblock content %}
