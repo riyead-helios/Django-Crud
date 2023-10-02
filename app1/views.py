@@ -1,65 +1,49 @@
-from django.shortcuts import redirect, render
-from multiprocessing import context
+from rest_framework.views import APIView
+from .serializers import EmployeeSerializer
+from django.http.response import JsonResponse
+from django.http.response import Http404
+from rest_framework.response import Response
 
-
-from .forms import EmployeeForm
 from .models import Employee
 
 
-# Create your views here.
-def Home(request):
-    form = EmployeeForm()
-    
-    if request.method == 'POST':
-        form = EmployeeForm(request.POST)
-        form.save()
-        form = EmployeeForm()
+class EmployeeView(APIView):
 
-    # Retrive all Employee and pass it to index.html through context
-    data = Employee.objects.all()
-
-    context = {
-        'form' : form,
-        'data' : data,
-    }
-
-    
-    return render(request, 'app1/index.html', context)
-
-
-    
-
-# Update View
-def Update_Record(request, id):
-    if request.method == 'POST':
-        data = Employee.objects.get(pk = id)
-        form = EmployeeForm(request.POST, instance = data)
+    def get_employee(self, pk):
+        try:
+            employee = Employee.objects.get(employeeId=pk)
+            return employee
+        except: 
+            return JsonResponse("Employee Does Not Exist")
         
-        if form.is_valid():
-            form.save()
-
-    # Return employee from the Employee model whose primary key matches the id and return single instance/data, then call EmployeeForm class and keep data into instance, then pass form to update.html through context with pre-populated data 
-    else:
-        data = Employee.objects.get(pk = id)
-        form = EmployeeForm(instance = data)
-
-        
-    context = {
-        'form' : form,
-    }
-
+    def get(self, request, pk=None):
+        if pk:
+            data = self.get_employee(pk)
+            serializer = EmployeeSerializer(data)
+        else:
+            data = Employee.objects.all()
+            serializer = EmployeeSerializer(data, many=True)
+        return Response(serializer.data)
     
-    return render (request, 'app1/update.html', context)
+    def post(self, request):
+        data = request.data
+        serializer = EmployeeSerializer(data=data)
 
-
-
-
-
-# Delete View
-def Delete_record(request, id):
-    # Return employee from the Employee model whose primary key matches the id
-    data = Employee.objects.get(pk = id)
-    data.delete()
-
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return JsonResponse("Failed to Add Employee", safe=False)
     
-    return redirect('/')
+    def put(self, request, pk=None):
+        employee_to_update = Employee.objects.get(employeeId=pk)
+        serializer = EmployeeSerializer(instance=employee_to_update, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse("Employee Updated Successfully", safe=False)
+        return JsonResponse("Faild to Update Employee")
+    
+    def delete(self, request, pk=None):
+        employee_to_delete = Employee.objects.get(employeeId= pk)
+        employee_to_delete.delete()
+        return JsonResponse("Employee Deleted Successfully", safe=False)
